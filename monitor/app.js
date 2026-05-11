@@ -120,10 +120,21 @@ function renderCalendar(days) {
 }
 
 async function refresh() {
+  const loading = document.getElementById("loading");
   try {
+    loading.hidden = false;
     const resp = await fetch("/api/status", { cache: "no-store" });
     if (!resp.ok) throw new Error(`status ${resp.status}`);
     const payload = await resp.json();
+    
+    // Infer project name from data root
+    const root = payload.data_root.toLowerCase();
+    let projectName = "Scraper";
+    if (root.includes("san francisco") || root.includes("sf_")) projectName = "SF";
+    else if (root.includes("ok_") || root.includes("oklahoma")) projectName = "Oklahoma";
+    else if (root.includes("santa_clara") || root.includes("sc_")) projectName = "Santa Clara";
+    document.getElementById("project-name").textContent = projectName;
+
     document.getElementById("data-root").textContent = payload.data_root;
     document.getElementById("generated-at").textContent = `updated ${formatRelative(payload.generated_at)}`;
     renderTotals(payload.totals);
