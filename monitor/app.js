@@ -136,6 +136,16 @@ async function refresh() {
     document.getElementById("project-name").textContent = projectName;
     document.title = `${projectName} Monitor`;
 
+    // Display case types
+    const typesBadge = document.getElementById("case-types-badge");
+    const types = payload.totals.case_types || [];
+    if (types.length > 0) {
+      typesBadge.textContent = types.join(", ");
+      typesBadge.hidden = false;
+    } else {
+      typesBadge.hidden = true;
+    }
+
     document.getElementById("data-root").textContent = payload.data_root;
     document.getElementById("generated-at").textContent = `updated ${formatRelative(payload.generated_at)}`;
     renderTotals(payload.totals);

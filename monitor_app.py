@@ -31,11 +31,18 @@ def classify_day(day_dir: Path) -> dict:
 
     total = 0
     scraped = 0
+    types = []
     if summary_path.exists():
         try:
             data = json.loads(summary_path.read_text())
             total = int(data.get("total_cases") or 0)
             scraped = int(data.get("scraped_cases") or 0)
+            
+            # Extract types from raw_by_type keys or run_metadata
+            found_types = data.get("raw_by_type", {}).keys()
+            if not found_types and "run_metadata" in data:
+                found_types = data["run_metadata"].get("case_types", [])
+            types = list(found_types)
         except Exception:
             pass
 
@@ -67,6 +74,7 @@ def classify_day(day_dir: Path) -> dict:
         "scraped": scraped,
         "failed": failed_count,
         "status": status,
+        "types": types,
     }
 
 
@@ -135,6 +143,12 @@ def build_status(data_root: Path) -> dict:
 
     days = gather_days(data_root)
     rate = gather_rate(data_root, now_ts=now)
+    
+    # Aggregate all unique types found
+    all_types = set()
+    for d in days:
+        all_types.update(d.get("types", []))
+    
     totals = {
         "days_tracked": len(days),
         "days_complete": sum(1 for d in days if d["status"] == "complete"),
@@ -142,6 +156,7 @@ def build_status(data_root: Path) -> dict:
         "days_with_failures": sum(1 for d in days if d["status"] == "has_failures"),
         "cases_total": sum(d["total"] for d in days),
         "cases_scraped": sum(d["scraped"] for d in days),
+        "case_types": sorted(list(all_types)),
     }
     status = {
         "generated_at": datetime.fromtimestamp(now, tz=timezone.utc)
