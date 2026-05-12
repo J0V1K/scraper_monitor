@@ -134,6 +134,7 @@ async function refresh() {
     else if (root.includes("ok_") || root.includes("oklahoma")) projectName = "Oklahoma";
     else if (root.includes("santa_clara") || root.includes("sc_")) projectName = "Santa Clara";
     document.getElementById("project-name").textContent = projectName;
+    document.title = `${projectName} Monitor`;
 
     document.getElementById("data-root").textContent = payload.data_root;
     document.getElementById("generated-at").textContent = `updated ${formatRelative(payload.generated_at)}`;
